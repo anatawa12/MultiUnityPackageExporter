@@ -1,6 +1,6 @@
 {
   "name": "com.anatawa12.multi-unity-package-exporter",
-  "version": "0.1.0",
+  "version": "0.1.1-beta.0",
   "displayName": "Multi UnityPackage Exporter",
   "description": "A tool to export multiple UnityPackages at once.",
   "unity": "2022.3",
