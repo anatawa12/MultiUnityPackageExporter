@@ -15,19 +15,43 @@ namespace Anatawa12.MultiUnityPackageExporter
         {
             var commonFiles = target.commonFiles
                 .SelectMany(fileSet => FilesForFileSet(fileSet, ""))
+                .SelectMany(FileAndParentDirectories)
+                .Distinct()
                 .ToArray();
 
             foreach (var variant in target.variants)
             {
                 var packageName = PackageName(target.packageNamePattern, variant.name);
                 var files = commonFiles
-                    .Concat(variant.files.SelectMany(fileSet => FilesForFileSet(fileSet!, variant.name)));
+                    .Concat(variant.files.SelectMany(fileSet => FilesForFileSet(fileSet!, variant.name)))
+                    .SelectMany(FileAndParentDirectories);
 
                 AssetDatabase.ExportPackage(
                     commonFiles.Concat(files).Distinct().ToArray(),
                     Path.Join(location, packageName),
                     ExportPackageOptions.Default
                 );
+            }
+        }
+
+        private static IEnumerable<string> FileAndParentDirectories(string path)
+        {
+            if (string.IsNullOrEmpty(path)) yield break;
+
+            // Normalize path to use '/' as directory separator
+            path = path.Replace('\\', '/');
+
+            // Yield the file itself
+            yield return path;
+
+            // Yield parent directories
+            while (true)
+            {
+                var parent = Path.GetDirectoryName(path);
+                if (string.IsNullOrEmpty(parent)) break;
+                if (!parent.Contains('/')) break; // Stop if we reach the root directory like "Assets"
+                yield return parent;
+                path = parent;
             }
         }
 
