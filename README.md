@@ -1,4 +1,4 @@
-# Multi Unitypackage Exporter
+# Multi UnityPackage Exporter
 
 A tool to export multiple Unity packages at once with pre-defined settings.
 
