@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -67,6 +69,11 @@ namespace Anatawa12.MultiUnityPackageExporter
             EditorGUILayout.HelpBox("Use {variant} to include the variant name in the package name.", MessageType.Info);
 
             EditorGUILayout.Space();
+
+            if (GUILayout.Button("Export UnityPackages", GUILayout.Height(25)))
+                ExportUnityPackages();
+
+            EditorGUILayout.Space(9);
             GUILayout.Label("Common Files", EditorStyles.boldLabel);
             DrawFiles(_commonFilesProperty);
 
@@ -75,6 +82,65 @@ namespace Anatawa12.MultiUnityPackageExporter
             DrawVariants(_variantsProperty);
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private const string EditorPrefsLastExportLocationKey = "com.anatawa12.multi-unity-package-exporter.last-export-location";
+
+        private void ExportUnityPackages()
+        {
+            var settings = (ExportSettings)target;
+
+            if (settings.variants.Any(x => string.IsNullOrWhiteSpace(x.name)))
+            {
+                EditorUtility.DisplayDialog("Error", "Some variant name is blank.", "OK");
+                return;
+            }
+            
+            if (settings.variants.Select(x => x.name).Distinct().Count() != settings.variants.Length)
+            {
+                EditorUtility.DisplayDialog("Error", "Some variant names are duplicated.", "OK");
+                return;
+            }
+
+            var lastLocation = EditorPrefs.GetString(EditorPrefsLastExportLocationKey, "");
+
+            var location = EditorUtility.SaveFolderPanel("Export UnityPackages", lastLocation, "");
+            if (string.IsNullOrEmpty(location)) return;
+
+            if (Directory.GetFileSystemEntries(location).Length != 0)
+            {
+                switch (EditorUtility.DisplayDialogComplex("Warning",
+                            "The selected folder is not empty. Do you want to clear it before exporting?",
+                            "Yes", "No", "Cancel Export"))
+                {
+                    case 0: // Yes
+                        try
+                        {
+                            foreach (var file in Directory.GetFiles(location))
+                            {
+                                File.Delete(file);
+                            }
+                            foreach (var dir in Directory.GetDirectories(location))
+                            {
+                                Directory.Delete(dir, true);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogError($"Failed to clear the directory: {e.Message}");
+                            return;
+                        }
+                        break;
+                    case 1: // No
+                        break;
+                    case 2: // Cancel Export
+                        return;
+                }
+            }
+
+            EditorPrefs.SetString(EditorPrefsLastExportLocationKey, location);
+
+            Exporter.ExportPackages(settings, location);
         }
 
         private void DrawVariants(SerializedProperty variantsProperty)

@@ -18,12 +18,12 @@ namespace Anatawa12.MultiUnityPackageExporter
         /// <summary>
         /// The files to be included in all variants of the unitypackage.
         /// </summary>
-        public ExportFileSet?[] commonFiles = Array.Empty<ExportFileSet?>();
+        public ExportFileSet[] commonFiles = Array.Empty<ExportFileSet>();
 
         /// <summary>
         /// The variants of the unitypackage.
         /// </summary>
-        public ExportVariant?[] variants = Array.Empty<ExportVariant>();
+        public ExportVariant[] variants = Array.Empty<ExportVariant>();
     }
 
     /// <summary>

@@ -11,6 +11,26 @@ namespace Anatawa12.MultiUnityPackageExporter
 {
     internal static class Exporter
     {
+        public static void ExportPackages(ExportSettings target, string location)
+        {
+            var commonFiles = target.commonFiles
+                .SelectMany(fileSet => FilesForFileSet(fileSet, ""))
+                .ToArray();
+
+            foreach (var variant in target.variants)
+            {
+                var packageName = PackageName(target.packageNamePattern, variant.name);
+                var files = commonFiles
+                    .Concat(variant.files.SelectMany(fileSet => FilesForFileSet(fileSet!, variant.name)));
+
+                AssetDatabase.ExportPackage(
+                    commonFiles.Concat(files).Distinct().ToArray(),
+                    Path.Join(location, packageName),
+                    ExportPackageOptions.Default
+                );
+            }
+        }
+
         public static string PackageName(string pattern, string variantName)
         {
             var baseName = pattern.Contains(ExportSettings.VariantPlaceholder)
