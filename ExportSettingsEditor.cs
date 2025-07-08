@@ -111,7 +111,7 @@ namespace Anatawa12.MultiUnityPackageExporter
             {
                 switch (EditorUtility.DisplayDialogComplex("Warning",
                             "The selected folder is not empty. Do you want to clear it before exporting?",
-                            "Yes", "No", "Cancel Export"))
+                            "Clear", "Do Not Clear", "Cancel Export"))
                 {
                     case 0: // Yes
                         try
